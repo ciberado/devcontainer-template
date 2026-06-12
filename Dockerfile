@@ -70,4 +70,3 @@ if command -v tmux &>/dev/null && [ -z "$TMUX" ] && [ -n "$PS1" ]; then
   tmux attach-session -t dev 2>/dev/null || tmux new-session -s dev
 fi
 SHELL_EOF
-

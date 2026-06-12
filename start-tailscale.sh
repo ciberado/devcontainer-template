@@ -5,7 +5,7 @@
 # 3. Uses PROJECT_NAME as the Tailscale hostname so the node is identifiable.
 # 4. Ensures OpenSSH is running.
 #
-# Required env vars (injected via devcontainer remoteEnv from host):
+# Required env vars (injected via docker --env-file from .devcontainer/.env):
 #   TAILSCALE_AUTHKEY  — a reusable / ephemeral auth key from the Tailscale console
 #   PROJECT_NAME       — used as the Tailscale node hostname: vs-<PROJECT_NAME>
 set -euo pipefail
@@ -13,12 +13,12 @@ set -euo pipefail
 # ── Validation ────────────────────────────────────────────────────────────────
 
 if [[ -z "${TAILSCALE_AUTHKEY:-}" ]]; then
-  echo "ERROR: TAILSCALE_AUTHKEY is not set. Export it on the host before opening the dev container." >&2
+  echo "ERROR: TAILSCALE_AUTHKEY is not set. Create .devcontainer/.env from the example." >&2
   exit 1
 fi
 
 if [[ -z "${PROJECT_NAME:-}" ]]; then
-  echo "ERROR: PROJECT_NAME is not set. Export it on the host before opening the dev container." >&2
+  echo "ERROR: PROJECT_NAME is not set. Create .devcontainer/.env from the example." >&2
   exit 1
 fi
 
