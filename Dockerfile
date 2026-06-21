@@ -6,6 +6,8 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu
 ARG USERNAME=dev
 ARG NODE_VERSION=22
 
+
+
 # The base image ships a non-root user called "vscode". Rename it.
 RUN if [ "${USERNAME}" != "vscode" ]; then \
       groupmod --new-name "${USERNAME}" vscode && \
@@ -37,6 +39,12 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | b
 # Keep the shell init wired up for interactive sessions.
 RUN echo '. "${NVM_DIR}/nvm.sh"' >> /home/${USERNAME}/.bashrc \
     && echo '. "${NVM_DIR}/nvm.sh"' >> /home/${USERNAME}/.zshrc 2>/dev/null || true
+
+# Install astrovim for all users
+COPY setup-astronvim.sh /tmp/setup-astronvim.sh
+RUN chmod +x /tmp/setup-astronvim.sh \
+    && /tmp/setup-astronvim.sh \
+    && rm /tmp/setup-astronvim.sh    
 
 # Wire up auto-cd to the devcontainer workspace and tmux auto-attach.
 # On any interactive shell (VS Code terminal, SSH), automatically:
