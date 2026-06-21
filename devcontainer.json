@@ -8,7 +8,7 @@
 		"dockerfile": "Dockerfile",
 		"args": {
 			"USERNAME": "dev",
-			"NODE_VERSION": "22"
+			"NODE_VERSION": "24"
 		}
 	},
 
