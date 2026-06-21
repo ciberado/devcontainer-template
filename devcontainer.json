@@ -17,7 +17,9 @@
 	"runArgs": [
 		"--hostname", "devcontainer",
 		"--env-file", "${localWorkspaceFolder}/.devcontainer/.env",
-		"--name", "vs-${localWorkspaceFolderBasename}"
+		"--name", "vs-${localWorkspaceFolderBasename}",
+		"--dns=100.100.100.100",
+		"--dns=1.1.1.1"
 	],
 
 	"features": {
