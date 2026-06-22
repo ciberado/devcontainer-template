@@ -41,10 +41,10 @@ RUN echo '. "${NVM_DIR}/nvm.sh"' >> /home/${USERNAME}/.bashrc \
     && echo '. "${NVM_DIR}/nvm.sh"' >> /home/${USERNAME}/.zshrc 2>/dev/null || true
 
 # Install astrovim for all users
-COPY setup-astronvim.sh /tmp/setup-astronvim.sh
-RUN chmod +x /tmp/setup-astronvim.sh \
-    && /tmp/setup-astronvim.sh \
-    && rm /tmp/setup-astronvim.sh    
+COPY setup-astrovim.sh /tmp/setup-astrovim.sh
+RUN chmod +x /tmp/setup-astrovim.sh \
+    && /tmp/setup-astrovim.sh \
+    && rm /tmp/setup-astrovim.sh    
 
 # Wire up auto-cd to the devcontainer workspace and tmux auto-attach.
 # On any interactive shell (VS Code terminal, SSH), automatically:
