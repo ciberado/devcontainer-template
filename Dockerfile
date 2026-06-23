@@ -25,7 +25,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends tmux curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install astrovim for all users
+# Install astrovim for all users (needs root for apt-get, /opt, /etc/skel).
 COPY setup-astrovim.sh /tmp/setup-astrovim.sh
 RUN chmod +x /tmp/setup-astrovim.sh \
     && /tmp/setup-astrovim.sh \
