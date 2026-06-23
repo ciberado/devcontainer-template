@@ -21,8 +21,9 @@ OVERWRITE_EXISTING_CONFIGS="${OVERWRITE_EXISTING_CONFIGS:-false}"
 
 echo "==> Installing base dependencies"
 export DEBIAN_FRONTEND=noninteractive
-sudo apt-get update
-sudo apt-get install -y curl unzip git ca-certificates
+apt-get update
+apt-get install -y curl unzip git ca-certificates
+apt install -y build-essential
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -34,14 +35,14 @@ echo "==> Installing Neovim"
 NVIM_DIR=/opt/nvim-linux-x86_64
 curl -L -o "$TMP_DIR/nvim-linux-x86_64.tar.gz" \
   https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
-sudo rm -rf "$NVIM_DIR"
-sudo tar -C /opt -xzf "$TMP_DIR/nvim-linux-x86_64.tar.gz"
+rm -rf "$NVIM_DIR"
+tar -C /opt -xzf "$TMP_DIR/nvim-linux-x86_64.tar.gz"
 
 # Available to every login shell, for every user (present and future)
-sudo tee /etc/profile.d/nvim-path.sh > /dev/null << 'EOF'
+tee /etc/profile.d/nvim-path.sh > /dev/null << 'EOF'
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 EOF
-sudo chmod +x /etc/profile.d/nvim-path.sh
+chmod +x /etc/profile.d/nvim-path.sh
 
 # ---------------------------------------------------------------------------
 # 2. tree-sitter CLI
@@ -52,19 +53,23 @@ curl -L -o "$TMP_DIR/tree-sitter-cli-linux-x64.zip" \
   "https://github.com/tree-sitter/tree-sitter/releases/download/${TS_VERSION}/tree-sitter-cli-linux-x64.zip"
 unzip -oq "$TMP_DIR/tree-sitter-cli-linux-x64.zip" -d "$TMP_DIR"
 chmod +x "$TMP_DIR/tree-sitter"
-sudo mv "$TMP_DIR/tree-sitter" /usr/local/bin/tree-sitter
+mv "$TMP_DIR/tree-sitter" /usr/local/bin/tree-sitter
 tree-sitter --version
 
 # ---------------------------------------------------------------------------
 # 3. ripgrep / lazygit / bottom
 # ---------------------------------------------------------------------------
 echo "==> Installing ripgrep, lazygit, bottom"
-sudo apt-get install -y ripgrep lazygit
+apt-get install -y ripgrep 
 
 BOTTOM_VERSION="0.12.3"
 curl -L -o "$TMP_DIR/bottom.deb" \
   "https://github.com/ClementTsang/bottom/releases/download/${BOTTOM_VERSION}/bottom_${BOTTOM_VERSION}-1_amd64.deb"
-sudo apt-get install -y "$TMP_DIR/bottom.deb"
+apt-get install -y "$TMP_DIR/bottom.deb"
+
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+')
+curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+tar xf lazygit.tar.gz -C /usr/local/bin lazygit
 
 # ---------------------------------------------------------------------------
 # 4. Build a single AstroNvim "template" config
@@ -74,12 +79,12 @@ sudo apt-get install -y "$TMP_DIR/bottom.deb"
 echo "==> Building AstroNvim template config"
 TEMPLATE_DIR=/etc/skel/.config/nvim
 
-sudo mkdir -p /etc/skel/.config
-sudo rm -rf "$TEMPLATE_DIR"
-sudo git clone --depth 1 https://github.com/AstroNvim/template "$TEMPLATE_DIR"
-sudo rm -rf "$TEMPLATE_DIR/.git"
+mkdir -p /etc/skel/.config
+rm -rf "$TEMPLATE_DIR"
+git clone --depth 1 https://github.com/AstroNvim/template "$TEMPLATE_DIR"
+rm -rf "$TEMPLATE_DIR/.git"
 
-sudo tee -a "$TEMPLATE_DIR/init.lua" > /dev/null << 'EOF'
+tee -a "$TEMPLATE_DIR/init.lua" > /dev/null << 'EOF'
 
 vim.keymap.set("n", "<up>", "gk", { desc = "Move cursor up one visual line" })
 vim.keymap.set("n", "<down>", "gj", { desc = "Move cursor down one visual line" })
@@ -93,8 +98,8 @@ vim.opt.linebreak = true     -- Wrap at word boundaries (not mid-word)
 vim.opt.breakindent = true   -- Indent wrapped lines nicely
 EOF
 
-sudo mkdir -p "$TEMPLATE_DIR/lua/plugins"
-sudo tee "$TEMPLATE_DIR/lua/plugins/render-markdown.lua" > /dev/null << 'EOF'
+mkdir -p "$TEMPLATE_DIR/lua/plugins"
+tee "$TEMPLATE_DIR/lua/plugins/render-markdown.lua" > /dev/null << 'EOF'
 return {
   "MeanderingProgrammer/render-markdown.nvim",
   dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
@@ -104,7 +109,7 @@ return {
 EOF
 
 # Template should be world-readable so it can be copied for any user
-sudo chmod -R a+rX "$TEMPLATE_DIR"
+chmod -R a+rX "$TEMPLATE_DIR"
 
 # ---------------------------------------------------------------------------
 # 5. Apply the config to every existing user on the machine (root + UID>=1000)
@@ -119,10 +124,10 @@ while IFS=: read -r username _ uid gid _ home shell; do
       continue
     fi
 
-    sudo mkdir -p "$home/.config"
-    sudo rm -rf "$home/.config/nvim"
-    sudo cp -r "$TEMPLATE_DIR" "$home/.config/nvim"
-    sudo chown -R "$username":"$gid" "$home/.config/nvim"
+    mkdir -p "$home/.config"
+    rm -rf "$home/.config/nvim"
+    cp -r "$TEMPLATE_DIR" "$home/.config/nvim"
+    chown -R "$username":"$gid" "$home/.config/nvim"
     echo "  - $username: configured ($home/.config/nvim)"
   fi
 done < /etc/passwd
