@@ -35,6 +35,13 @@
 
 	// Drop into the container as our renamed user.
 	"remoteUser": "dev",
+	"containerUser": "dev",
+
+	// Disable UID remapping: renaming vscode→dev in the Dockerfile
+	// can confuse older devcontainer CLI versions during the -uid
+	// image generation step. The dev user already has UID 1000
+	// which matches most host users.
+	"updateRemoteUserUID": false,
 
 	// Run once after the image is built: install oh-my-tmux and Fresh editor.
 	"postCreateCommand": "bash .devcontainer/post-create.sh",
