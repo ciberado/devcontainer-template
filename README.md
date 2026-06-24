@@ -8,6 +8,11 @@ container is running you can SSH into it from any device on your tailnet, keep
 long-running work in a tmux session, and build Docker images inside the
 container.
 
+> **Tailscale is optional.** If you leave `TAILSCALE_AUTHKEY` empty (or skip
+> creating a `.env` file), the container starts normally without joining a
+> tailnet. SSH, tmux, Node.js, Docker-in-Docker, and all other tooling still
+> work.
+
 ## Quick start
 
 Add this template to your **existing project repository** using `git subtree`:
@@ -16,19 +21,6 @@ Add this template to your **existing project repository** using `git subtree`:
 git subtree add --prefix=.devcontainer \
     https://github.com/ciberado/devcontainer-template.git \
     main --squash
-```
-
-Then create a `.env` file inside `.devcontainer/`:
-
-```bash
-cp .devcontainer/.env.example .devcontainer/.env
-```
-
-Edit `.devcontainer/.env` with your Tailscale auth key and project name:
-
-```env
-TAILSCALE_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxx
-PROJECT_NAME=my-project
 ```
 
 Then build and start the container with the `devcontainer` CLI:
@@ -43,30 +35,30 @@ Once it's running, open a shell inside the container:
 devcontainer exec --workspace-folder . bash
 ```
 
-That's it — you're now inside the container, on your tailnet, in a tmux
-session.
+That's it — you're inside the container, in a tmux session.
 
-### Prerequisites
+### Enabling Tailscale (optional)
 
-- [Docker](https://docs.docker.com/get-docker/)
-- The [`devcontainer` CLI](https://containers.dev/supporting) (`npm install -g @devcontainers/cli`)
-- A [Tailscale](https://tailscale.com) account
-- A [Tailscale auth key](https://login.tailscale.com/admin/settings/authkeys) (reusable or ephemeral)
+To join your tailnet, create a `.env` file from the example:
 
-## How it works
-
-```
-You ── devcontainer up ── Docker ── Ubuntu 24.04 ── tailscale up ── your tailnet
-                                   │                │
-                                   ├─ Node 22       ├─ SSH enabled
-                                   ├─ tmux          ├─ hostname: vs-<PROJECT_NAME>
-                                   ├─ Docker-in-Docker
-                                   └─ OpenSSH server
+```bash
+cp .devcontainer/.env.example .devcontainer/.env
 ```
 
-The container joins your tailnet automatically on every start using the
-pre-provisioned auth key from `.env`. The SSH server lets you connect from
-anywhere on your tailnet:
+Edit `.devcontainer/.env` with your Tailscale auth key and project name:
+
+```env
+TAILSCALE_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxx
+PROJECT_NAME=my-project
+```
+
+Rebuild the container to pick up the env vars:
+
+```bash
+devcontainer up --workspace-folder .
+```
+
+Once connected, SSH in from anywhere on your tailnet:
 
 ```bash
 ssh dev@vs-my-project
@@ -76,13 +68,39 @@ When you SSH in, you're automatically dropped into a tmux session called `dev`.
 Detach with `Ctrl+B d`, close the connection, and reattach later — your work
 survives.
 
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- The [`devcontainer` CLI](https://containers.dev/supporting) (`npm install -g @devcontainers/cli`)
+- [Tailscale](https://tailscale.com) account *(optional — only needed for tailnet access)*
+- [Tailscale auth key](https://login.tailscale.com/admin/settings/authkeys) *(optional — reusable or ephemeral)*
+
+## How it works
+
+```
+You ── devcontainer up ── Docker ── Ubuntu 24.04 ── (tailscale up) ── your tailnet
+                                   │                │
+                                   ├─ Node 22       ├─ SSH enabled
+                                   ├─ tmux          ├─ hostname: vs-<PROJECT_NAME>
+                                   ├─ Docker-in-Docker
+                                   └─ OpenSSH server
+```
+
+When `TAILSCALE_AUTHKEY` is set, the container joins your tailnet automatically
+on every start using the pre-provisioned auth key from `.env`. The SSH server
+lets you connect from anywhere on your tailnet:
+
+```bash
+ssh dev@vs-my-project
+```
+
 ## File structure
 
 | File | Role |
 |---|---|
 | `Dockerfile` | Builds the image: Ubuntu 24.04, Node 22 (via nvm), TypeScript tooling, tmux. Renames the default user to `dev`. |
 | `devcontainer.json` | Devcontainer orchestrator. Sets `runArgs` for Docker (hostname, env file, container name), loads features (Tailscale, GitHub CLI, Docker-in-Docker, OpenSSH), wires lifecycle hooks. |
-| `start-tailscale.sh` | Runs on every container start. Starts `tailscaled`, authenticates to your tailnet with the auth key, enables SSH, advertises tags. |
+| `start-tailscale.sh` | Runs on every container start. If `TAILSCALE_AUTHKEY` is set: starts `tailscaled`, authenticates to your tailnet, enables SSH + MagicDNS, advertises tags. If empty: skipped gracefully. |
 | `post-create.sh` | Runs once after the image is built. Installs oh-my-tmux and the Fresh editor. |
 | `README.md` | This file. |
 
@@ -116,7 +134,7 @@ Even after pulling, each project must have:
 
 | Item | Created by | Notes |
 |---|---|---|
-| `.devcontainer/.env` | Manual (`cp .devcontainer/.env.example .devcontainer/.env`) | Per-project auth key + name. Gitignored. |
+| `.devcontainer/.env` | Optional (auto-created if missing) | Per-project auth key + name. Gitignored. |
 | `.devcontainer/.env.example` | `git subtree add` | Template reference. Commit to git. |
 | `.devcontainer/` | `git subtree add` | The whole template. |
 
@@ -127,11 +145,12 @@ auth key, Docker container naming — comes from the template or your `.env`.
 
 | Variable | Required | Description |
 |---|---|---|
-| `TAILSCALE_AUTHKEY` | Yes | Tailscale auth key (reusable or ephemeral). Generate at [admin console](https://login.tailscale.com/admin/settings/authkeys). |
-| `PROJECT_NAME` | Yes | Used for the Tailscale hostname: `vs-<PROJECT_NAME>`. Also influences the Docker container name. |
+| `TAILSCALE_AUTHKEY` | No | Tailscale auth key (reusable or ephemeral). Leave empty to skip Tailscale. Generate at [admin console](https://login.tailscale.com/admin/settings/authkeys). |
+| `PROJECT_NAME` | No | Used for the Tailscale hostname: `vs-<PROJECT_NAME>`. Only meaningful when `TAILSCALE_AUTHKEY` is set. |
 
 Docker reads these from `.env` via `--env-file` at container start — they are
-not baked into the image.
+not baked into the image. If `.env` doesn't exist, it's created automatically
+as an empty file and the container starts without Tailscale.
 
 ## Docker container naming
 

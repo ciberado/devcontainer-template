@@ -2,6 +2,10 @@
 {
 	"name": "Node.js & TypeScript",
 
+	// Ensure .env exists so the --env-file flag in runArgs doesn't fail.
+	// If it already exists, this is a no-op.
+	"initializeCommand": "mkdir -p .devcontainer && [ -f .devcontainer/.env ] || touch .devcontainer/.env",
+
 	// Build from a Dockerfile so we can use Ubuntu 24.04 (noble) and rename
 	// the default user to "dev". The typescript-node image has no noble variant.
 	"build": {
@@ -18,7 +22,6 @@
 		"--hostname", "devcontainer",
 		"--env-file", "${localWorkspaceFolder}/.devcontainer/.env",
 		"--name", "vs-${localWorkspaceFolderBasename}",
-		"--dns=100.100.100.100",
 		"--dns=1.1.1.1"
 	],
 
@@ -47,5 +50,6 @@
 	"postCreateCommand": "bash .devcontainer/post-create.sh",
 
 	// Start Tailscale (and OpenSSH) every time the container starts.
+	// Skips gracefully when TAILSCALE_AUTHKEY is empty.
 	"postStartCommand": "bash .devcontainer/start-tailscale.sh"
 }
