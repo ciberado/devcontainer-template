@@ -40,7 +40,8 @@ echo ""
 # ── Step 1 — Project directory ────────────────────────────────────────────────
 step "Step 1: Project directory"
 
-read -r -p "$(yellow '?') Directory for the new project [$(bold '.')]: " PROJECT_DIR </dev/tty
+printf "  %s Directory for the new project [%s]: " "$(yellow '?')" "$(bold '.')" >&2
+read -r PROJECT_DIR </dev/tty
 PROJECT_DIR="${PROJECT_DIR:-.}"
 PROJECT_DIR="${PROJECT_DIR/#\~/$HOME}"
 
@@ -53,7 +54,8 @@ echo "  $(green '✔') Using: ${PROJECT_DIR}"
 step "Step 2: Project name"
 
 DEFAULT_NAME="$(basename "$PROJECT_DIR")"
-read -r -p "$(yellow '?') Project name [$(bold "${DEFAULT_NAME}")]: " PROJECT_NAME </dev/tty
+printf "  %s Project name [%s]: " "$(yellow '?')" "$(bold "${DEFAULT_NAME}")" >&2
+read -r PROJECT_NAME </dev/tty
 PROJECT_NAME="${PROJECT_NAME:-$DEFAULT_NAME}"
 echo "  $(green '✔') Using: ${PROJECT_NAME}"
 
@@ -75,7 +77,8 @@ GLOBAL_NAME="$(git config --global user.name 2>/dev/null || true)"
 if [ -n "$GLOBAL_NAME" ]; then
   echo "  $(green '✔') Using global git user.name: ${GLOBAL_NAME}"
 else
-  read -r -p "$(yellow '?')  Your name (for local git config): " GIT_USERNAME </dev/tty
+  printf "  %s  Your name (for local git config): " "$(yellow '?')" >&2
+  read -r GIT_USERNAME </dev/tty
   git config user.name "$GIT_USERNAME"
   echo "  $(green '✔') Local git user.name set."
 fi
@@ -85,7 +88,8 @@ GLOBAL_EMAIL="$(git config --global user.email 2>/dev/null || true)"
 if [ -n "$GLOBAL_EMAIL" ]; then
   echo "  $(green '✔') Using global git user.email: ${GLOBAL_EMAIL}"
 else
-  read -r -p "$(yellow '?')  Your email (for local git config): " GIT_EMAIL </dev/tty
+  printf "  %s  Your email (for local git config): " "$(yellow '?')" >&2
+  read -r GIT_EMAIL </dev/tty
   git config user.email "$GIT_EMAIL"
   echo "  $(green '✔') Local git user.email set."
 fi
@@ -112,12 +116,14 @@ fi
 step "Step 5: Tailscale configuration (optional)"
 
 echo "  Leave the auth key empty to skip Tailscale setup entirely."
-read -r -s -p "$(yellow '?')  Tailscale auth key (input hidden): " TAILSCALE_AUTHKEY </dev/tty
+printf "  %s  Tailscale auth key (input hidden): " "$(yellow '?')" >&2
+read -r -s TAILSCALE_AUTHKEY </dev/tty
 echo ""
 
 TS_HOSTNAME=""
 if [ -n "$TAILSCALE_AUTHKEY" ]; then
-  read -r -p "  $(yellow '?') Tailscale node name [$(bold "${PROJECT_NAME}")]: " TS_HOSTNAME </dev/tty
+  printf "  %s Tailscale node name [%s]: " "$(yellow '?')" "$(bold "${PROJECT_NAME}")" >&2
+  read -r TS_HOSTNAME </dev/tty
   TS_HOSTNAME="${TS_HOSTNAME:-$PROJECT_NAME}"
   echo "  $(green '✔') Tailscale will be enabled with hostname: vs-${TS_HOSTNAME}"
 else
