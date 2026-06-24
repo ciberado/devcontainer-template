@@ -29,7 +29,7 @@ The script will:
 2. Set up git, prompting for your name/email if not globally configured
 3. Run `git subtree add` to pull in the template
 4. Optionally configure Tailscale (leave the key empty to skip)
-5. Print the final `devcontainer up` command
+5. Print the final `devcontainer up` and `ssh` commands
 
 ### Manual setup
 

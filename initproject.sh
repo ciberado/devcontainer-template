@@ -161,6 +161,12 @@ echo "  Open a shell inside it:"
 echo "    $(green 'devcontainer exec --workspace-folder . bash')"
 echo ""
 
+if [ -n "$TAILSCALE_AUTHKEY" ]; then
+  echo "  SSH in from any device on your tailnet:"
+  echo "    $(green "ssh dev@vs-${TS_HOSTNAME}")"
+  echo ""
+fi
+
 if [ -z "$TAILSCALE_AUTHKEY" ]; then
   echo "  To enable Tailscale later, edit ${ENV_FILE}:"
   echo "    TAILSCALE_AUTHKEY=tskey-auth-xxxxxxxx"
