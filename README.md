@@ -15,7 +15,26 @@ container.
 
 ## Quick start
 
-Add this template to your **existing project repository** using `git subtree`:
+### Bootstrap script (recommended)
+
+The fastest way — one command that guides you through everything:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ciberado/devcontainer-template/main/initproject.sh | bash
+```
+
+The script will:
+
+1. Ask for a project directory (default: current directory)
+2. Set up git, prompting for your name/email if not globally configured
+3. Run `git subtree add` to pull in the template
+4. Optionally configure Tailscale (leave the key empty to skip)
+5. Print the final `devcontainer up` command
+
+### Manual setup
+
+If you prefer to do it yourself, add the template to your **existing project
+repository** using `git subtree`:
 
 ```bash
 git subtree add --prefix=.devcontainer \
@@ -98,6 +117,7 @@ ssh dev@vs-my-project
 
 | File | Role |
 |---|---|
+| `initproject.sh` | Bootstrap script. Run via `curl … \| bash` to guide you through creating a new project. |
 | `Dockerfile` | Builds the image: Ubuntu 24.04, Node 22 (via nvm), TypeScript tooling, tmux. Renames the default user to `dev`. |
 | `devcontainer.json` | Devcontainer orchestrator. Sets `runArgs` for Docker (hostname, env file, container name), loads features (Tailscale, GitHub CLI, Docker-in-Docker, OpenSSH), wires lifecycle hooks. |
 | `start-tailscale.sh` | Runs on every container start. If `TAILSCALE_AUTHKEY` is set: starts `tailscaled`, authenticates to your tailnet, enables SSH + MagicDNS, advertises tags. If empty: skipped gracefully. |
