@@ -19,17 +19,6 @@
 
 set -euo pipefail
 
-# ── Terminal redirect (curl | bash) ──────────────────────────────────────────
-# When piped via curl, stdin is the pipe — read from the real terminal instead.
-if [ ! -t 0 ]; then
-  if [ -e /dev/tty ]; then
-    exec </dev/tty
-  else
-    echo "ERROR: This script must be run interactively (no /dev/tty)." >&2
-    exit 1
-  fi
-fi
-
 # ── Configuration ─────────────────────────────────────────────────────────────
 REPO_URL="https://github.com/ciberado/devcontainer-template.git"
 TEMPLATE_PREFIX=".devcontainer"
@@ -51,7 +40,7 @@ echo ""
 # ── Step 1 — Project directory ────────────────────────────────────────────────
 step "Step 1: Project directory"
 
-read -r -p "$(yellow '?') Directory for the new project [$(bold '.')]: " PROJECT_DIR
+read -r -p "$(yellow '?') Directory for the new project [$(bold '.')]: " PROJECT_DIR </dev/tty
 PROJECT_DIR="${PROJECT_DIR:-.}"
 PROJECT_DIR="${PROJECT_DIR/#\~/$HOME}"
 
@@ -64,7 +53,7 @@ echo "  $(green '✔') Using: ${PROJECT_DIR}"
 step "Step 2: Project name"
 
 DEFAULT_NAME="$(basename "$PROJECT_DIR")"
-read -r -p "$(yellow '?') Project name [$(bold "${DEFAULT_NAME}")]: " PROJECT_NAME
+read -r -p "$(yellow '?') Project name [$(bold "${DEFAULT_NAME}")]: " PROJECT_NAME </dev/tty
 PROJECT_NAME="${PROJECT_NAME:-$DEFAULT_NAME}"
 echo "  $(green '✔') Using: ${PROJECT_NAME}"
 
@@ -86,7 +75,7 @@ GLOBAL_NAME="$(git config --global user.name 2>/dev/null || true)"
 if [ -n "$GLOBAL_NAME" ]; then
   echo "  $(green '✔') Using global git user.name: ${GLOBAL_NAME}"
 else
-  read -r -p "$(yellow '?')  Your name (for local git config): " GIT_USERNAME
+  read -r -p "$(yellow '?')  Your name (for local git config): " GIT_USERNAME </dev/tty
   git config user.name "$GIT_USERNAME"
   echo "  $(green '✔') Local git user.name set."
 fi
@@ -96,7 +85,7 @@ GLOBAL_EMAIL="$(git config --global user.email 2>/dev/null || true)"
 if [ -n "$GLOBAL_EMAIL" ]; then
   echo "  $(green '✔') Using global git user.email: ${GLOBAL_EMAIL}"
 else
-  read -r -p "$(yellow '?')  Your email (for local git config): " GIT_EMAIL
+  read -r -p "$(yellow '?')  Your email (for local git config): " GIT_EMAIL </dev/tty
   git config user.email "$GIT_EMAIL"
   echo "  $(green '✔') Local git user.email set."
 fi
@@ -123,12 +112,12 @@ fi
 step "Step 5: Tailscale configuration (optional)"
 
 echo "  Leave the auth key empty to skip Tailscale setup entirely."
-read -r -s -p "$(yellow '?')  Tailscale auth key (input hidden): " TAILSCALE_AUTHKEY
+read -r -s -p "$(yellow '?')  Tailscale auth key (input hidden): " TAILSCALE_AUTHKEY </dev/tty
 echo ""
 
 TS_HOSTNAME=""
 if [ -n "$TAILSCALE_AUTHKEY" ]; then
-  read -r -p "  $(yellow '?') Tailscale node name [$(bold "${PROJECT_NAME}")]: " TS_HOSTNAME
+  read -r -p "  $(yellow '?') Tailscale node name [$(bold "${PROJECT_NAME}")]: " TS_HOSTNAME </dev/tty
   TS_HOSTNAME="${TS_HOSTNAME:-$PROJECT_NAME}"
   echo "  $(green '✔') Tailscale will be enabled with hostname: vs-${TS_HOSTNAME}"
 else
