@@ -91,9 +91,9 @@ else
   echo "(tailscale) Tailscale up. Node address: $(tailscale ip -4 2>/dev/null || echo 'pending')"
 
   # — MagicDNS —————————————————————————————————————————————————————————————————
-  # Docker's --dns is static, so we set 100.100.100.100 dynamically only when
-  # Tailscale is actually running. Prepended so tailnet names resolve first;
-  # the static --dns=1.1.1.1 stays as fallback.
+  # Prepended so tailnet names resolve first. Docker's default DNS (inherited
+  # from the host) stays as fallback; a hardcoded public --dns can be refused
+  # on some networks, so we don't set one.
 
   if ! grep -q '^nameserver 100\.100\.100\.100$' /etc/resolv.conf 2>/dev/null; then
     sudo sed -i '1inameserver 100.100.100.100' /etc/resolv.conf

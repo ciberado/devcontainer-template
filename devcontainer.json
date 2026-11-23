@@ -24,8 +24,7 @@
 	// start-tailscale.sh sources .env on every start instead.
 	"runArgs": [
 		"--hostname", "devcontainer",
-		"--name", "vs-${localWorkspaceFolderBasename}",
-		"--dns=1.1.1.1"
+		"--name", "vs-${localWorkspaceFolderBasename}"
 	],
 
 	"features": {
